@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws";
 import { PacketCrafter, PacketTypes } from "./Packet";
 
 const webSocketServer = new WebSocketServer({
-  port: 8080,
+  port: 80,
 });
 
 webSocketServer.on("connection", (socket) => {
