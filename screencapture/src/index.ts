@@ -32,7 +32,7 @@ webSocketServer.on("connection", (socket) => {
             rows: parsed.data.height,
           });
         } else {
-          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-it", parsed.data.image], {
+          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-it", "-e", "PS1='\\[\\][\\u@\\h \\W]\\$ \\[\\]'", parsed.data.image], {
             name: "computercraft",
             cols: parsed.data.width,
             rows: parsed.data.height,
