@@ -5,7 +5,7 @@ const node_pty_1 = require("node-pty");
 const ws_1 = require("ws");
 const Packet_1 = require("./Packet");
 const webSocketServer = new ws_1.WebSocketServer({
-    port: 8080,
+    port: 80,
 });
 webSocketServer.on("connection", (socket) => {
     let docker = null;
@@ -30,7 +30,7 @@ webSocketServer.on("connection", (socket) => {
                     });
                 }
                 else {
-                    docker = (0, node_pty_1.spawn)("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-i", parsed.data.image], {
+                    docker = (0, node_pty_1.spawn)("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-it", "-e", "PS1='\\[\\][\\u@\\h \\W]\\$ \\[\\]'", parsed.data.image], {
                         name: "computercraft",
                         cols: parsed.data.width,
                         rows: parsed.data.height,
