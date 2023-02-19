@@ -1,0 +1,22 @@
+{
+  "name": "localtest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "typescript": "^4.9.5",
+    "ws": "^8.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.14.0",
+    "@types/ws": "^8.5.4",
+    "node-ansiparser": "^2.2.1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["esnext"],
+    "moduleResolution": "node",
+    "types": ["lua-types/5.4", "cc-tweaked-types"],
+    "strict": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "tstl": {
+    "luaTarget": "JIT",
+    "luaBundle": "./dist/ubuntu.lua",
+    "luaBundleEntry": "./src/index.ts"
+  }
+}

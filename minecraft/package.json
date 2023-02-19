@@ -1,0 +1,21 @@
+{
+  "name": "minecraft",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tstl",
+    "dev": "tstl --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {
+    "lua-types": "^2.13.1",
+    "typescript-to-lua": "^1.13.1",
+    "cc-tweaked-types": "github:tgcGlaDius/cc-tweaked-types",
+    "typescript": "^4.9.5"
+  }
+}
