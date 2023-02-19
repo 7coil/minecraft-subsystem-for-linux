@@ -44,7 +44,7 @@ KEYMAP.set("x", ["x", "X", "\x18", 0]);
 KEYMAP.set("y", ["y", "Y", "\x19", 0]);
 KEYMAP.set("z", ["z", "Z", "\x1A", 0]);
 KEYMAP.set("leftBracket", ["[", 0, 0, 0]);
-KEYMAP.set("backslash", ["\\", 0, 0, 0]);
+KEYMAP.set("backslash", ["\\", "|", 0, 0]);
 KEYMAP.set("rightBracket", ["]", 0, 0, 0]);
 KEYMAP.set("grave", ["`", 0, 0, 0]);
 KEYMAP.set("world1", [0, 0, 0, 0]);

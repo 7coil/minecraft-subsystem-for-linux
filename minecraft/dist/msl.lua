@@ -3806,7 +3806,18 @@ function BufferlessFrame.prototype.inst_x(self, flag)
             )
         end
     elseif flag == "" then
-    elseif flag == "\0" then
+        local speaker = peripheral.find("speaker")
+        if speaker ~= nil then
+            speaker.playSound("minecraft:block.bell.use")
+        end
+    elseif flag == "" then
+        for ____, side in ipairs(redstone.getSides()) do
+            redstone.setOutput(side, true)
+        end
+    elseif flag == "" then
+        for ____, side in ipairs(redstone.getSides()) do
+            redstone.setOutput(side, false)
+        end
     end
 end
 function BufferlessFrame.prototype.inst_c(self, collected, params, flag)
@@ -4045,7 +4056,7 @@ KEYMAP:set("x", {"x", "X", "", 0})
 KEYMAP:set("y", {"y", "Y", "", 0})
 KEYMAP:set("z", {"z", "Z", "", 0})
 KEYMAP:set("leftBracket", {"[", 0, 0, 0})
-KEYMAP:set("backslash", {"\\", 0, 0, 0})
+KEYMAP:set("backslash", {"\\", "|", 0, 0})
 KEYMAP:set("rightBracket", {"]", 0, 0, 0})
 KEYMAP:set("grave", {"`", 0, 0, 0})
 KEYMAP:set("world1", {0, 0, 0, 0})

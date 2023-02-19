@@ -55,7 +55,7 @@ class BufferlessFrame implements ITerminal {
       screenHeight - this.marginBottom
     );
   }
-  
+
   private syncPanePositions(xPos: number, yPos: number) {
     this.topPane.setCursorPos(xPos, yPos);
     this.bottomPane.setCursorPos(xPos, yPos - this.marginBottom);
@@ -64,12 +64,12 @@ class BufferlessFrame implements ITerminal {
 
   private setCursorPos(x: number, y: number) {
     const [screenX, screenY] = term.getSize();
-    
+
     if (x <= 0) x = 1;
     if (y <= 0) y = 1;
     if (x > screenX) x = screenX;
     if (y > screenY) y = screenY;
-    
+
     term.setCursorPos(x, y);
     this.syncPanePositions(x, y);
     term.setCursorPos(x, y);
@@ -119,10 +119,16 @@ class BufferlessFrame implements ITerminal {
         this.setCursorPos(Math.max(1, cursorX - 1), cursorY);
       }
     } else if (flag === "\x07") {
-      // const speaker = peripheral.find("speaker");
-      // speaker.playSound("minecraft:block.bell.use");
-    } else if (flag === "\x00") {
-      // write(' ')
+      const speaker = peripheral.find("speaker") as any as speakerPeripheral;
+      speaker?.playSound("minecraft:block.bell.use");
+    } else if (flag === "\x11") {
+      for (const side of redstone.getSides()) {
+        redstone.setOutput(side, true)
+      }
+    } else if (flag === "\x13") {
+      for (const side of redstone.getSides()) {
+        redstone.setOutput(side, false)
+      }
     }
   }
   public inst_c(collected: string, params: number[], flag: string) {
@@ -267,9 +273,7 @@ class BufferlessFrame implements ITerminal {
       }
     }
   }
-  public inst_H(collected: string, params: number[], flag: string) {
-
-  }
+  public inst_H(collected: string, params: number[], flag: string) {}
   public inst_P(data: string) {}
   public inst_U() {}
   public complete() {}

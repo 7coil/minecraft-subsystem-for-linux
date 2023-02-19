@@ -10,10 +10,6 @@ const webSocketServer = new WebSocketServer({
 webSocketServer.on("connection", (socket) => {
   let docker: IPty | null = null;
 
-  socket.on("close", () => {
-    docker?.kill();
-  });
-
   socket.on("message", (data: any) => {
     const parsed = JSON.parse(data) as PacketTypes;
 
@@ -26,14 +22,17 @@ webSocketServer.on("connection", (socket) => {
       case "connect":
         const containerInfo = execSync(`docker ps -a -q -f name=${parsed.data.label}`)?.toString("utf-8");
         console.log(containerInfo);
-        if (containerInfo?.length) {
+
+        if (docker) {
+          
+        } else if (containerInfo?.length) {
           docker = spawn("docker", ["start", "-ia", parsed.data.label], {
             name: "computercraft",
             cols: parsed.data.width,
             rows: parsed.data.height,
           });
         } else {
-          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-it", parsed.data.image], {
+          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-i", parsed.data.image], {
             name: "computercraft",
             cols: parsed.data.width,
             rows: parsed.data.height,
@@ -54,6 +53,11 @@ webSocketServer.on("connection", (socket) => {
   })
 
   socket.on("error", () => {
+    docker?.kill();
+    socket.close();
+  });
+
+  socket.on("close", () => {
     docker?.kill();
     socket.close();
   });
