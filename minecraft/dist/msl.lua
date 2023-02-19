@@ -3690,144 +3690,219 @@ local ____exports = {}
 local ____colourMapping = require("colourMapping")
 local findBackground = ____colourMapping.findBackground
 local findForeground = ____colourMapping.findForeground
-local ____JASON = require("JASON")
-local JASON = ____JASON.JASON
-local ____Packet = require("Packet")
-local PacketCrafter = ____Packet.PacketCrafter
 local BufferlessFrame = __TS__Class()
 BufferlessFrame.name = "BufferlessFrame"
 function BufferlessFrame.prototype.____constructor(self, websocket)
+    self.savedX = -1
+    self.savedY = -1
     self.websocket = websocket
     local screenWidth, screenHeight = term.getSize()
-    self.window = window.create(
+    self.marginTop = 0
+    self.marginBottom = screenHeight
+    self.topPane = window.create(
         term.current(),
         1,
         1,
-        screenWidth,
-        screenHeight
+        1,
+        1
     )
-    self.window.clear()
-    term.setCursorBlink(true)
+    self.scrollPane = window.create(
+        term.current(),
+        1,
+        1,
+        1,
+        1
+    )
+    self.bottomPane = window.create(
+        term.current(),
+        1,
+        1,
+        1,
+        1
+    )
+    self.scrollPane.clear()
+    self.topPane.clear()
+    self.bottomPane.clear()
+    self.scrollPane.setCursorBlink(true)
+    self.topPane.setCursorBlink(true)
+    self.bottomPane.setCursorBlink(true)
+    self:syncPaneSizes()
+    self:setCursorPos(1, 1)
+    self:syncPanePositions(1, 1)
+end
+function BufferlessFrame.prototype.syncPaneSizes(self)
+    local screenWidth, screenHeight = term.getSize()
+    self.topPane.reposition(1, 1, screenWidth, self.marginTop)
+    self.scrollPane.reposition(1, self.marginTop + 1, screenWidth, self.marginBottom - self.marginTop)
+    self.bottomPane.reposition(1, self.marginBottom, screenWidth, screenHeight - self.marginBottom)
+end
+function BufferlessFrame.prototype.syncPanePositions(self, xPos, yPos)
+    self.topPane.setCursorPos(xPos, yPos)
+    self.bottomPane.setCursorPos(xPos, yPos - self.marginBottom)
+    self.scrollPane.setCursorPos(xPos, yPos - self.marginTop)
+end
+function BufferlessFrame.prototype.setCursorPos(self, x, y)
+    local screenX, screenY = term.getSize()
+    if x <= 0 then
+        x = 1
+    end
+    if y <= 0 then
+        y = 1
+    end
+    if x > screenX then
+        x = screenX
+    end
+    if y > screenY then
+        y = screenY
+    end
+    term.setCursorPos(x, y)
+    self:syncPanePositions(x, y)
+    term.setCursorPos(x, y)
+end
+function BufferlessFrame.prototype.write(self, input)
+    local xPos, yPos = term.getCursorPos()
+    self:syncPanePositions(xPos, yPos)
+    if yPos <= self.marginTop then
+        self.topPane.write(input)
+        local newXPos, newYPos = self.topPane.getCursorPos()
+        self:setCursorPos(newXPos, newYPos)
+    elseif yPos > self.marginBottom then
+        self.bottomPane.write(input)
+        local newXPos, newYPos = self.bottomPane.getCursorPos()
+        self:setCursorPos(newXPos, newYPos + self.marginBottom)
+    else
+        self.scrollPane.write(input)
+        local newXPos, newYPos = self.scrollPane.getCursorPos()
+        self:setCursorPos(newXPos, newYPos + self.marginTop)
+    end
 end
 function BufferlessFrame.prototype.inst_p(self, input)
-    self.websocket.send(PacketCrafter:debug({d = "inst_p " .. input}))
-    self.window.write(input)
+    self:write(input)
 end
 function BufferlessFrame.prototype.inst_o(self, s)
 end
 function BufferlessFrame.prototype.inst_x(self, flag)
-    self.websocket.send(PacketCrafter:debug({d = "inst_x " .. flag}))
-    local cursorX, cursorY = self.window.getCursorPos()
-    local screenX, screenY = self.window.getSize()
+    local cursorX, cursorY = self.scrollPane.getCursorPos()
+    local screenX, screenY = self.scrollPane.getSize()
     if flag == "\n" then
-        if cursorY == screenY then
-            self.window.scroll(1)
-            self.window.setCursorPos(1, cursorY)
+        if cursorY >= screenY then
+            self.scrollPane.scroll(1)
+            self:setCursorPos(1, cursorY)
         else
-            self.window.setCursorPos(1, cursorY + 1)
+            self:setCursorPos(1, cursorY + 1)
         end
     elseif flag == "\r" then
-        self.window.setCursorPos(1, cursorY)
+        self:setCursorPos(1, cursorY)
     elseif flag == "\b" then
         if cursorX == 1 then
-            self.window.setCursorPos(screenX, cursorY - 1)
+            self:setCursorPos(
+                screenX,
+                math.max(1, cursorY - 1)
+            )
         else
-            self.window.setCursorPos(cursorX - 1, cursorY)
+            self:setCursorPos(
+                math.max(1, cursorX - 1),
+                cursorY
+            )
         end
     elseif flag == "" then
     elseif flag == "\0" then
     end
 end
 function BufferlessFrame.prototype.inst_c(self, collected, params, flag)
-    self.websocket.send(PacketCrafter:debug({d = JASON:stringify({collected = collected, params = params, flag = flag})}))
     if flag == "K" then
         local param = unpack(params)
-        local cursorX, cursorY = self.window.getCursorPos()
-        local screenWidth, screenHeight = self.window.getSize()
+        local cursorX, cursorY = term.getCursorPos()
+        local screenWidth, screenHeight = term.getSize()
         if #params == 0 or param == 0 then
             do
                 local i = cursorX
                 while i <= screenWidth do
-                    self.window.setCursorPos(i, cursorY)
-                    self.window.write(" ")
+                    self:setCursorPos(i, cursorY)
+                    self:write(" ")
                     i = i + 1
                 end
             end
-            self.window.setCursorPos(cursorX, cursorY)
+            self:setCursorPos(cursorX, cursorY)
         elseif param == 1 then
             do
                 local i = 1
                 while i <= cursorX do
-                    self.window.setCursorPos(i, cursorY)
-                    self.window.write(" ")
+                    self:setCursorPos(i, cursorY)
+                    self:write(" ")
                     i = i + 1
                 end
             end
-            self.window.setCursorPos(cursorX, cursorY)
+            self:setCursorPos(cursorX, cursorY)
         elseif param == 2 then
-            self.window.clearLine()
+            term.clearLine()
         end
     elseif flag == "J" then
         local param = unpack(params)
-        local cursorX, cursorY = self.window.getCursorPos()
-        local screenWidth, screenHeight = self.window.getSize()
+        local cursorX, cursorY = term.getCursorPos()
+        local screenWidth, screenHeight = term.getSize()
         if #params == 0 or param == 0 then
             do
                 local i = cursorY
                 while i <= screenHeight do
-                    self.window.setCursorPos(1, i)
-                    self.window.clearLine()
+                    self:setCursorPos(1, i)
+                    term.clearLine()
                     i = i + 1
                 end
             end
             do
                 local i = cursorX
                 while i <= screenWidth do
-                    self.window.setCursorPos(i, cursorY)
-                    self.window.write(" ")
+                    self:setCursorPos(i, cursorY)
+                    self:write(" ")
                     i = i + 1
                 end
             end
-            self.window.setCursorPos(cursorX, cursorY)
+            self:setCursorPos(cursorX, cursorY)
         elseif param == 1 then
             do
                 local i = 1
                 while i < cursorY do
-                    self.window.setCursorPos(1, i)
-                    self.window.clearLine()
+                    self:setCursorPos(1, i)
+                    term.clearLine()
                     i = i + 1
                 end
             end
             do
                 local i = 1
                 while i < cursorX do
-                    self.window.setCursorPos(i, cursorY)
-                    self.window.write(" ")
+                    self:setCursorPos(i, cursorY)
+                    self:write(" ")
                     i = i + 1
                 end
             end
-            self.window.setCursorPos(cursorX, cursorY)
+            self:setCursorPos(cursorX, cursorY)
         elseif param == 2 then
-            self.window.clear()
+            self.topPane.clear()
+            self.scrollPane.clear()
+            self.bottomPane.clear()
+            term.clear()
+            self:setCursorPos(cursorX, cursorY)
         end
     elseif flag == "H" or flag == "f" then
-        local screenWidth, screenHeight = self.window.getSize()
         local row, col = unpack(params)
-        if type(col) ~= "number" then
-            col = 0
-        end
         if type(row) ~= "number" then
             row = 0
         end
-        if col >= screenWidth then
-            col = screenWidth - 1
+        if type(col) ~= "number" then
+            col = 0
         end
-        if row >= screenHeight then
-            row = screenHeight - 1
+        if row < 0 then
+            row = 0
         end
-        self.window.setCursorPos(col + 1, row + 1)
+        if col < 0 then
+            col = 0
+        end
+        self:setCursorPos(col + 1, row + 1)
     elseif flag == "A" or flag == "B" or flag == "C" or flag == "D" or flag == "E" or flag == "F" or flag == "G" then
-        local x, y = self.window.getCursorPos()
+        local posX, posY = term.getCursorPos()
+        local x = posX
+        local y = posY
         local amount = unpack(params)
         if flag == "A" then
             y = y - amount
@@ -3852,7 +3927,13 @@ function BufferlessFrame.prototype.inst_c(self, collected, params, flag)
         if flag == "G" then
             x = amount
         end
-        self.window.setCursorPos(x, y)
+        if x < 1 then
+            x = 1
+        end
+        if y < 1 then
+            y = 1
+        end
+        self:setCursorPos(x, y)
     elseif flag == "m" then
         __TS__ArrayForEach(
             params,
@@ -3860,22 +3941,45 @@ function BufferlessFrame.prototype.inst_c(self, collected, params, flag)
                 local newBackground = findBackground(nil, param)
                 local newForeground = findForeground(nil, param)
                 if param == 0 then
-                    self.window.setBackgroundColour(colours.black)
-                    self.window.setTextColour(colours.white)
+                    self.scrollPane.setBackgroundColour(colours.black)
+                    self.topPane.setBackgroundColour(colours.black)
+                    self.bottomPane.setBackgroundColour(colours.black)
+                    self.scrollPane.setTextColour(colours.white)
+                    self.topPane.setTextColour(colours.white)
+                    self.bottomPane.setTextColour(colours.white)
                 elseif newBackground then
-                    self.window.setBackgroundColor(newBackground)
+                    self.scrollPane.setBackgroundColor(newBackground)
+                    self.topPane.setBackgroundColor(newBackground)
+                    self.bottomPane.setBackgroundColor(newBackground)
                 elseif newForeground then
-                    self.window.setTextColor(newForeground)
+                    self.scrollPane.setTextColor(newForeground)
+                    self.topPane.setTextColor(newForeground)
+                    self.bottomPane.setTextColor(newForeground)
                 end
             end
         )
     elseif flag == "r" then
-        local topMargin, bottomMargin = unpack(params)
-        local screenWidth, screenHeight = self.window.getSize()
-        self.window.reposition(1, topMargin + 1, screenWidth, bottomMargin - topMargin)
+        local cursorX, cursorY = term.getCursorPos()
+        local marginTop, marginBottom = unpack(params)
+        self.marginTop = marginTop
+        self.marginBottom = marginBottom
+        self:syncPaneSizes()
+        self:setCursorPos(cursorX, cursorY)
+        self:syncPanePositions(cursorX, cursorY)
     end
 end
 function BufferlessFrame.prototype.inst_e(self, collected, flag)
+    if collected == "" and flag == "7" then
+        local cursorX, cursorY = term.getCursorPos()
+        self.savedX = cursorX
+        self.savedY = cursorY
+    end
+    if collected == "" and flag == "8" then
+        if self.savedX > 0 and self.savedY > 0 then
+            term.setCursorPos(self.savedX, self.savedY)
+            self:syncPanePositions(self.savedX, self.savedY)
+        end
+    end
 end
 function BufferlessFrame.prototype.inst_H(self, collected, params, flag)
 end
@@ -3951,10 +4055,10 @@ KEYMAP:set("tab", {"\t", 0, 0, 0})
 KEYMAP:set("backspace", {"\b", 0, 0, 0})
 KEYMAP:set("insert", {0, 0, 0, 0})
 KEYMAP:set("delete", {0, 0, 0, 0})
-KEYMAP:set("right", {0, 0, 0, 0})
-KEYMAP:set("left", {0, 0, 0, 0})
-KEYMAP:set("down", {0, 0, 0, 0})
-KEYMAP:set("up", {0, 0, 0, 0})
+KEYMAP:set("right", {"[C", 0, 0, 0})
+KEYMAP:set("left", {"[D", 0, 0, 0})
+KEYMAP:set("down", {"[B", 0, 0, 0})
+KEYMAP:set("up", {"[A", 0, 0, 0})
 KEYMAP:set("pageUp", {0, 0, 0, 0})
 KEYMAP:set("pageDown", {0, 0, 0, 0})
 KEYMAP:set("home", {0, 0, 0, 0})
@@ -4037,6 +4141,7 @@ return ____exports
  end,
 ["index"] = function(...) 
 local ____lualib = require("lualib_bundle")
+local __TS__StringReplaceAll = ____lualib.__TS__StringReplaceAll
 local __TS__New = ____lualib.__TS__New
 local ____exports = {}
 local ____BufferlessFrame = require("BufferlessFrame")
@@ -4053,11 +4158,11 @@ local function main(____, args)
     if #args == 1 and args[1] == "index" then
         return
     end
-    local connectionUrl = "ws://" .. args[1]
-    local image = args[2] or "ubuntu"
-    local websocket, failureReason = http.websocket(connectionUrl)
+    local image = args[1] or "ubuntu"
+    local label = (("msl-" .. __TS__StringReplaceAll(image, ":", "-")) .. "-") .. tostring(os.computerID())
+    local websocket, failureReason = http.websocket("ws://localhost:8080")
     if not websocket then
-        printError(("Failed to connect to \"" .. connectionUrl) .. "\"!")
+        printError("Failed to connect to Docker!")
         printError(failureReason)
     else
         local framebuffer = __TS__New(BufferlessFrame, websocket)
@@ -4068,7 +4173,7 @@ local function main(____, args)
         local leftCtrl = false
         local rightCtrl = false
         local terminalWidth, terminalHeight = term.getSize()
-        websocket.send(PacketCrafter:connect({width = terminalWidth, height = terminalHeight, image = image}))
+        websocket.send(PacketCrafter:connect({width = terminalWidth, height = terminalHeight, image = image, label = label}))
         while running do
             local unknownEvent = {os.pullEvent()}
             if unknownEvent[1] == "websocket_message" then

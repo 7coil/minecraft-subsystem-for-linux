@@ -1,3 +1,4 @@
+import { execSync, spawnSync } from "child_process";
 import { IPty, spawn } from "node-pty";
 import { WebSocketServer } from "ws";
 import { PacketCrafter, PacketTypes } from "./Packet";
@@ -23,15 +24,25 @@ webSocketServer.on("connection", (socket) => {
         docker?.write(parsed.data.d);
         break;
       case "connect":
-        docker = spawn("docker", ["run", "-it", parsed.data.image, "/bin/bash"], {
-          name: "computercraft",
-          cols: parsed.data.width,
-          rows: parsed.data.height,
-        });
+        const containerInfo = execSync(`docker ps -a -q -f name=${parsed.data.label}`)?.toString("utf-8");
+        console.log(containerInfo);
+        if (containerInfo?.length) {
+          docker = spawn("docker", ["start", "-ia", parsed.data.label], {
+            name: "computercraft",
+            cols: parsed.data.width,
+            rows: parsed.data.height,
+          });
+        } else {
+          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-it", parsed.data.image], {
+            name: "computercraft",
+            cols: parsed.data.width,
+            rows: parsed.data.height,
+          });
+        }
       
         docker.onData((data: string) => {
           const txData = PacketCrafter.writeToTerminal({ d: data });
-          console.log(txData);
+          // console.log(txData);
           socket.send(txData);
         });
 

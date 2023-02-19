@@ -7,21 +7,14 @@ import { TerminalParser } from "./TerminalParser";
 const main = (args: string[]) => {
   if (args.length === 1 && args[0] === "index") return;
 
-  // print("Hello world!");
-  // print("Arguments");
-
-  // for (let i = 0; i < args.length; i++) {
-  //   print(i, args[i]);
-  // }
-
-  const connectionUrl = `ws://${args[0]}`;
-  const image = args[1] ?? "ubuntu";
+  const image = args[0] ?? "ubuntu";
+  const label = `msl-${image.replaceAll(":", "-")}-${os.computerID()}`
 
   // Start off by connecting to Salesforce
-  const [websocket, failureReason] = http.websocket(connectionUrl);
+  const [websocket, failureReason] = http.websocket("ws://localhost:8080");
   
   if (!websocket) {
-    printError(`Failed to connect to "${connectionUrl}"!`);
+    printError(`Failed to connect to Docker!`);
     printError(failureReason);
   } else {
     const framebuffer = new BufferlessFrame(websocket);
@@ -39,6 +32,7 @@ const main = (args: string[]) => {
         width: terminalWidth,
         height: terminalHeight,
         image,
+        label,
       })
     );
 

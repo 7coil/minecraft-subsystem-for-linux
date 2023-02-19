@@ -25,6 +25,7 @@ type ConnectPacketData = {
   width: number;
   height: number;
   image: string;
+  label: string;
 }
 type ConnectPacket = Packet<"connect", ConnectPacketData>;
 

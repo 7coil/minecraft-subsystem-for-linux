@@ -10,7 +10,7 @@
   },
   "tstl": {
     "luaTarget": "JIT",
-    "luaBundle": "./dist/ubuntu.lua",
+    "luaBundle": "./dist/msl.lua",
     "luaBundleEntry": "./src/index.ts"
   }
 }

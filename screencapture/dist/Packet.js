@@ -18,5 +18,8 @@ class PacketCrafter {
     static connect(data) {
         return PacketCrafter.make("connect", data);
     }
+    static debug(data) {
+        return PacketCrafter.make("debug", data);
+    }
 }
 exports.PacketCrafter = PacketCrafter;
