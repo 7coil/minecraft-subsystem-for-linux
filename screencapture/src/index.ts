@@ -26,13 +26,13 @@ webSocketServer.on("connection", (socket) => {
         if (docker) {
           
         } else if (containerInfo?.length) {
-          docker = spawn("docker", ["start", "-ia", parsed.data.label], {
+          docker = spawn("docker", ["start", "-iat", parsed.data.label], {
             name: "computercraft",
             cols: parsed.data.width,
             rows: parsed.data.height,
           });
         } else {
-          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-i", parsed.data.image], {
+          docker = spawn("docker", ["run", "--name", parsed.data.label, "--entrypoint", "/bin/bash", "--hostname", parsed.data.label, "-it", parsed.data.image], {
             name: "computercraft",
             cols: parsed.data.width,
             rows: parsed.data.height,

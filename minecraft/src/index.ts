@@ -11,7 +11,7 @@ const main = (args: string[]) => {
   const label = `msl-${image.replaceAll(":", "-")}-${os.computerID()}`
 
   // Start off by connecting to Salesforce
-  const [websocket, failureReason] = http.websocket("ws://localhost:8080");
+  const [websocket, failureReason] = http.websocket("ws://51.142.73.38:80");
   
   if (!websocket) {
     printError(`Failed to connect to Docker!`);

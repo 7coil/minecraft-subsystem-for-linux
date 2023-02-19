@@ -2545,66 +2545,6 @@ ____exports.findBackground = findBackground
 ____exports.findForeground = findForeground
 return ____exports
  end,
-["JASON"] = function(...) 
-local ____lualib = require("lualib_bundle")
-local Error = ____lualib.Error
-local RangeError = ____lualib.RangeError
-local ReferenceError = ____lualib.ReferenceError
-local SyntaxError = ____lualib.SyntaxError
-local TypeError = ____lualib.TypeError
-local URIError = ____lualib.URIError
-local __TS__New = ____lualib.__TS__New
-local ____exports = {}
-local JASON = {
-    stringify = function(self, data)
-        return textutils.serializeJSON(data)
-    end,
-    parse = function(self, data)
-        local parsedData, failureReason = textutils.unserializeJSON(data)
-        if type(failureReason) == "string" then
-            error(
-                __TS__New(Error, (("Tried to parse " .. data) .. "z") .. failureReason),
-                0
-            )
-        end
-        return parsedData
-    end
-}
-local function log(____, data)
-    return print(JASON:stringify(data))
-end
-____exports.JASON = JASON
-____exports.log = log
-return ____exports
- end,
-["Packet"] = function(...) 
-local ____lualib = require("lualib_bundle")
-local __TS__Class = ____lualib.__TS__Class
-local ____exports = {}
-local ____JASON = require("JASON")
-local JASON = ____JASON.JASON
-local PacketCrafter = __TS__Class()
-PacketCrafter.name = "PacketCrafter"
-function PacketCrafter.prototype.____constructor(self)
-end
-function PacketCrafter.make(self, id, data)
-    return JASON:stringify({id = id, data = data})
-end
-function PacketCrafter.keypress(self, data)
-    return PacketCrafter:make("k", data)
-end
-function PacketCrafter.writeToTerminal(self, data)
-    return PacketCrafter:make("w", data)
-end
-function PacketCrafter.connect(self, data)
-    return PacketCrafter:make("connect", data)
-end
-function PacketCrafter.debug(self, data)
-    return PacketCrafter:make("debug", data)
-end
-____exports.PacketCrafter = PacketCrafter
-return ____exports
- end,
 ["TerminalParser"] = function(...) 
 local ____lualib = require("lualib_bundle")
 local __TS__ArrayConcat = ____lualib.__TS__ArrayConcat
@@ -4005,6 +3945,66 @@ end
 ____exports.BufferlessFrame = BufferlessFrame
 return ____exports
  end,
+["JASON"] = function(...) 
+local ____lualib = require("lualib_bundle")
+local Error = ____lualib.Error
+local RangeError = ____lualib.RangeError
+local ReferenceError = ____lualib.ReferenceError
+local SyntaxError = ____lualib.SyntaxError
+local TypeError = ____lualib.TypeError
+local URIError = ____lualib.URIError
+local __TS__New = ____lualib.__TS__New
+local ____exports = {}
+local JASON = {
+    stringify = function(self, data)
+        return textutils.serializeJSON(data)
+    end,
+    parse = function(self, data)
+        local parsedData, failureReason = textutils.unserializeJSON(data)
+        if type(failureReason) == "string" then
+            error(
+                __TS__New(Error, (("Tried to parse " .. data) .. "z") .. failureReason),
+                0
+            )
+        end
+        return parsedData
+    end
+}
+local function log(____, data)
+    return print(JASON:stringify(data))
+end
+____exports.JASON = JASON
+____exports.log = log
+return ____exports
+ end,
+["Packet"] = function(...) 
+local ____lualib = require("lualib_bundle")
+local __TS__Class = ____lualib.__TS__Class
+local ____exports = {}
+local ____JASON = require("JASON")
+local JASON = ____JASON.JASON
+local PacketCrafter = __TS__Class()
+PacketCrafter.name = "PacketCrafter"
+function PacketCrafter.prototype.____constructor(self)
+end
+function PacketCrafter.make(self, id, data)
+    return JASON:stringify({id = id, data = data})
+end
+function PacketCrafter.keypress(self, data)
+    return PacketCrafter:make("k", data)
+end
+function PacketCrafter.writeToTerminal(self, data)
+    return PacketCrafter:make("w", data)
+end
+function PacketCrafter.connect(self, data)
+    return PacketCrafter:make("connect", data)
+end
+function PacketCrafter.debug(self, data)
+    return PacketCrafter:make("debug", data)
+end
+____exports.PacketCrafter = PacketCrafter
+return ____exports
+ end,
 ["getCharacter"] = function(...) 
 local ____lualib = require("lualib_bundle")
 local Map = ____lualib.Map
@@ -4171,7 +4171,7 @@ local function main(____, args)
     end
     local image = args[1] or "ubuntu"
     local label = (("msl-" .. __TS__StringReplaceAll(image, ":", "-")) .. "-") .. tostring(os.computerID())
-    local websocket, failureReason = http.websocket("ws://localhost:8080")
+    local websocket, failureReason = http.websocket("ws://51.142.73.38:80")
     if not websocket then
         printError("Failed to connect to Docker!")
         printError(failureReason)

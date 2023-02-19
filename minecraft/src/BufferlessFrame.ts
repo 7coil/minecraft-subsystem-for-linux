@@ -1,6 +1,4 @@
 import { findBackground, findForeground } from "./colourMapping";
-import { JASON } from "./JASON";
-import { PacketCrafter } from "./Packet";
 import { ITerminal } from "./TerminalParser";
 
 class BufferlessFrame implements ITerminal {
